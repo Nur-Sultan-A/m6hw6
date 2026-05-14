@@ -2,11 +2,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-
 from .serializers import RegisterSerializer, UserSerializer
+from .tasks import send_welcome_email
 
 
 class RegisterView(APIView):
@@ -18,6 +17,7 @@ class RegisterView(APIView):
         if serializer.is_valid():
 
             serializer.save()
+            send_welcome_email.delay(serializer.instance.email)
 
             return Response(
                 serializer.data,
